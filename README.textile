@@ -1,1 +1,23 @@
 h1. iTunes Store API
+
+This API will construct the appropriate iTunes Store API URL to query, and use RequestCore and JSON to retrieve and parse the data.
+
+You can also request the actual store pages that you typically see when using the iTunes client. These are cleaned up with Tidy and parsed with SimpleXML so you can grab additional data.
+
+h2. Requirements
+
+* PHP 5.2
+* cURL
+* JSON
+* "RequestCore":http://requestcore.googlecode.com
+* "CacheCore":http://cachecore.googlecode.com (Optional)
+* SimpleXML (Optional)
+* Tidy (Optional)
+
+h2. Example usage
+
+None yet. It's coming.
+
+h2. License & Copyright
+
+This code is Copyright (c) 2009, Ryan Parman. However, I'm licensing this code for others to use under the "Simplified BSD license":http://opensource.org/licenses/bsd-license.php.

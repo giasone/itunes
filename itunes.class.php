@@ -106,16 +106,26 @@ class iTunesStore
 	 */
 	function __call($name, $args)
 	{
-		// Change the names of the methods to match what the API expects
-		$name = ucwords($name);
+		// Init
 		$clean_args = array();
+		$tv = '';
+
+		// We need to handle TV stuff differently
+		if (strpos($name, 'tv') === 0)
+		{
+			$name = substr($name, 2);
+			$tv = 'TV';
+		}
+
+		// Change the names of the methods to match what the API expects
+		$name = $tv . ucwords($name);
 
 		// Convert any array values to comma-delimited strings
 		foreach ($args[0] as $k => $v)
 		{
 			if (is_array($v))
 			{
-				$clean_args[$k] = implode(',', $v);
+				$clean_args[$k] = urldecode(implode(',', $v));
 			}
 			else
 			{
@@ -124,7 +134,7 @@ class iTunesStore
 		}
 
 		// Construct the rest of the query parameters with what was passed to the method
-		$fields = urldecode(http_build_query((count($clean_args) > 0) ? $clean_args : array(), '', '&'));
+		$fields = http_build_query((count($clean_args) > 0) ? $clean_args : array(), '', '&');
 
 		// Construct the URL to request
 		if ($this->subclass)
@@ -138,6 +148,113 @@ class iTunesStore
 		}
 
 		// Return the value
-		return $api_call;
+		return $this->request_json($api_call);
+	}
+
+
+	/*%******************************************************************************************%*/
+	// REQUEST/RESPONSE
+
+	/**
+	 * Method: request_json()
+	 * 	Requests the JSON data, parses it, and returns it. Requires RequestCore and JSON.
+	 *
+	 * Parameters:
+	 * 	url - _string_ (Required) The web service URL to request.
+	 *
+	 * Returns:
+	 * 	ResponseCore object
+	 */
+	public function request_json($url)
+	{
+		if (class_exists('RequestCore'))
+		{
+			$http = new RequestCore($url);
+			$http->send_request();
+
+			$response = new stdClass();
+			$response->header = $http->get_response_header();
+			$response->body = json_decode($http->get_response_body());
+			$response->status = $http->get_response_code();
+
+			return $response;
+		}
+
+		throw new Exception('This class requires RequestCore. http://requestcore.googlecode.com');
+	}
+
+	/**
+	 * Method: request_storefront()
+	 * 	Requests the actual iTunes Store page, parses it to XML, and returns it. Requires RequestCore, SimpleXML and Tidy.
+	 *
+	 * Parameters:
+	 * 	url - _string_ (Required) The web service URL to request.
+	 *
+	 * Returns:
+	 * 	ResponseCore object
+	 */
+	public function request_storefront($url)
+	{
+		if (class_exists('RequestCore'))
+		{
+			$http = new RequestCore($url);
+			$http->add_header('X-Apple-Store-Front', '143441-1,5');
+			$http->send_request();
+
+			$response = new stdClass();
+			$response->header = $http->get_response_header();
+			$response->body = $http->get_response_body();
+			$response->status = $http->get_response_code();
+
+			return $response;
+		}
+
+		throw new Exception('This class requires RequestCore. http://requestcore.googlecode.com');
+	}
+
+
+	/*%******************************************************************************************%*/
+	// UTILITY
+
+	/**
+	 * Method: clean_with_tidy_and_parse_as_xml()
+	 * 	Cleans the give content with HTML Tidy, then parses it as XML with SimpleXML.
+	 *
+	 * Parameters:
+	 * 	content - _string_ (Required) The content to parse, as a string.
+	 *
+	 * Returns:
+	 * 	SimpleXMLElement The content parsed as XML.
+	 */
+	public function clean_with_tidy_and_parse_as_xml($content)
+	{
+		$tidy = tidy_parse_string($content, array('output-xml' => true, 'numeric-entities' => true), 'UTF8');
+		$tidy->cleanRepair();
+		return new SimpleXMLElement($tidy, LIBXML_NOCDATA);
+	}
+
+	/**
+	 * Method: location_exists()
+	 * 	Checks to see if a given web location exists.
+	 *
+	 * Parameters:
+	 * 	url - _string_ (Required) The URL to request.
+	 *
+	 * Returns:
+	 * 	boolean Whether the location exists or not (HTTP 200).
+	 */
+	public function location_exists($url)
+	{
+		if (class_exists('RequestCore'))
+		{
+			$http = new RequestCore($url);
+			$http->set_method(HTTP_HEAD);
+			$http->send_request();
+
+			$response = $http->get_response_header('_info');
+			return (boolean) $response['http_code'] == '200';
+		}
+
+		throw new Exception('This class requires RequestCore. http://requestcore.googlecode.com');
 	}
 }

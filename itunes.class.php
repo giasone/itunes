@@ -170,6 +170,7 @@ class iTunesStore
 		if (class_exists('RequestCore'))
 		{
 			$http = new RequestCore($url);
+			$http->set_useragent(ITUNES_USERAGENT);
 			$http->send_request();
 
 			$response = new stdClass();
@@ -198,6 +199,7 @@ class iTunesStore
 		if (class_exists('RequestCore'))
 		{
 			$http = new RequestCore($url);
+			$http->set_useragent(ITUNES_USERAGENT);
 			$http->add_header('X-Apple-Store-Front', '143441-1,5');
 			$http->send_request();
 
@@ -248,6 +250,7 @@ class iTunesStore
 		if (class_exists('RequestCore'))
 		{
 			$http = new RequestCore($url);
+			$http->set_useragent(ITUNES_USERAGENT);
 			$http->set_method(HTTP_HEAD);
 			$http->send_request();
 

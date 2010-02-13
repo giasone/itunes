@@ -135,7 +135,7 @@ class iTunesStore extends ServiceCore
 		}
 
 		// Return the value
-		return $this->request_json($api_call);
+		return $this->request($api_call);
 	}
 
 

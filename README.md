@@ -21,6 +21,7 @@ The `--recursive` option was added in a 1.6.x version of Git, so make sure you'r
 ## Example usage
 
 The iTunes web service APIs are documented here:
+
 * <http://www.apple.com/itunesaffiliates/API/AffiliatesSearch2.1.pdf>
 * <http://images.apple.com/itunesaffiliates/US/2009/Document/LinktoiTune.pdf>
 
@@ -76,7 +77,7 @@ Here, we'll search for an episode of Smallville then pull the large-sized image 
 
 	// Fetch and parse the iTunes Store version of the page.
 	$itunes_store_page = $itunes->request_storefront($itunes_store_url);
-	$page_xml = $itunes->clean_with_tidy_and_parse_as_xml($itunes_store_page->body);
+	$page_xml = $itunes->clean_with_tidy_and_parse_as_xml($itunes_store_page->body); # Requires the Tidy extension
 
 	// Search for all HTML <img> tags.
 	$image_search_results = $page_xml->xpath('//img');

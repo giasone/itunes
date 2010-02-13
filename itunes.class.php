@@ -23,6 +23,13 @@ if (!class_exists('ServiceCore'))
 	require_once 'lib/servicecore/servicecore.class.php';
 }
 
+
+/*%******************************************************************************************%*/
+// EXCEPTIONS
+
+class iTunesStore_Exception extends Exception {}
+
+
 /*%******************************************************************************************%*/
 // CLASS
 

@@ -4,49 +4,24 @@
  * 	Handle the iTunes Store API.
  *
  * Version:
- * 	2009.10.26
+ * 	2010.02.13
  *
  * Copyright:
- * 	2009 Ryan Parman
+ * 	2009-2010 Ryan Parman
  *
  * License:
- * 	Simplified BSD License - http://opensource.org/licenses/bsd-license.php
+ * 	MIT License - http://www.opensource.org/licenses/mit-license.php
  */
 
 
 /*%******************************************************************************************%*/
-// CONSTANTS
+// INCLUDES
 
-/**
- * Constant: ITUNES_NAME
- * 	Name of the software.
- */
-define('ITUNES_NAME', 'api-itunes');
-
-/**
- * Constant: ITUNES_VERSION
- * 	Version of the software.
- */
-define('ITUNES_VERSION', '1.0');
-
-/**
- * Constant: ITUNES_BUILD
- * 	Build ID of the software.
- */
-define('ITUNES_BUILD', gmdate('YmdHis', strtotime(substr('$Date$', 7, 25)) ? strtotime(substr('$Date$', 7, 25)) : filemtime(__FILE__)));
-
-/**
- * Constant: ITUNES_URL
- * 	URL to learn more about the software.
- */
-define('ITUNES_URL', 'http://github.com/skyzyx/itunes/');
-
-/**
- * Constant: ITUNES_USERAGENT
- * 	User agent string used to identify the software
- */
-define('ITUNES_USERAGENT', ITUNES_NAME . '/' . ITUNES_VERSION . ' (iTunes Store Toolkit; ' . ITUNES_URL . ') Build/' . ITUNES_BUILD);
-
+// Load this if it's not included.
+if (!class_exists('ServiceCore'))
+{
+	require_once 'lib/servicecore/servicecore.class.php';
+}
 
 /*%******************************************************************************************%*/
 // CLASS
@@ -54,7 +29,7 @@ define('ITUNES_USERAGENT', ITUNES_NAME . '/' . ITUNES_VERSION . ' (iTunes Store 
 /**
  * Class: iTunesStore
  */
-class iTunesStore
+class iTunesStore extends ServiceCore
 {
 	/**
 	 * Property: subclass
@@ -83,6 +58,19 @@ class iTunesStore
 	{
 		// Set default values
 		$this->subclass = $subclass;
+		$this->const_namespace = 'ITUNES';
+
+		if (!defined($this->const_namespace . '_USERAGENT'))
+		{
+			$this->set_app_info(array(
+				$this->const_namespace => array(
+					'name' => 'api-itunes',
+					'version' => '1.1',
+					'url' => 'http://github.com/skyzyx/itunes/',
+					'description' => 'iTunes Store Toolkit',
+				)
+			));
+		}
 	}
 
 
@@ -139,7 +127,6 @@ class iTunesStore
 		// Construct the URL to request
 		if ($this->subclass)
 		{
-			// viewArtist?id=909253
 			$api_call = sprintf('http://phobos.apple.com/WebObjects/MZStore.woa/wa/' . $this->subclass . $name . '?%s', $fields);
 		}
 		else
@@ -156,32 +143,18 @@ class iTunesStore
 	// REQUEST/RESPONSE
 
 	/**
-	 * Method: request_json()
-	 * 	Requests the JSON data, parses it, and returns it. Requires RequestCore and JSON.
+	 * Method: parse_response()
+	 * 	Default method for parsing the response data. You can extend the class and override this method for other response types.
 	 *
 	 * Parameters:
-	 * 	url - _string_ (Required) The web service URL to request.
+	 * 	data - _string_ (Required) The data to parse.
 	 *
 	 * Returns:
-	 * 	ResponseCore object
+	 * 	mixed data
 	 */
-	public function request_json($url)
+	public function parse_response($data)
 	{
-		if (class_exists('RequestCore'))
-		{
-			$http = new RequestCore($url);
-			$http->set_useragent(ITUNES_USERAGENT);
-			$http->send_request();
-
-			$response = new stdClass();
-			$response->header = $http->get_response_header();
-			$response->body = json_decode($http->get_response_body());
-			$response->status = $http->get_response_code();
-
-			return $response;
-		}
-
-		throw new Exception('This class requires RequestCore. http://requestcore.googlecode.com');
+		return json_decode($data);
 	}
 
 	/**
@@ -210,8 +183,6 @@ class iTunesStore
 
 			return $response;
 		}
-
-		throw new Exception('This class requires RequestCore. http://requestcore.googlecode.com');
 	}
 
 
@@ -257,7 +228,5 @@ class iTunesStore
 			$response = $http->get_response_header('_info');
 			return (boolean) $response['http_code'] == '200';
 		}
-
-		throw new Exception('This class requires RequestCore. http://requestcore.googlecode.com');
 	}
 }

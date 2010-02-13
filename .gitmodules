@@ -1,0 +1,3 @@
+[submodule "lib/servicecore"]
+	path = lib/servicecore
+	url = git://github.com/skyzyx/servicecore.git
